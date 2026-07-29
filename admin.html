@@ -60,6 +60,27 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
 .product-price { font-size:16px; font-weight:700; color:var(--success); }
 .product-actions { display:flex; gap:8px; }
 
+.skeleton-card {
+  background:var(--bg-card); border-radius:var(--radius); border:1px solid var(--border);
+  margin-bottom:12px; padding:14px; display:flex; align-items:center; gap:14px;
+}
+.skeleton-img {
+  width:60px; height:60px; border-radius:8px;
+  background:linear-gradient(90deg, var(--bg-hover) 25%, #475569 50%, var(--bg-hover) 75%);
+  background-size:200% 100%; animation:skeletonShine 1.5s infinite;
+}
+.skeleton-text {
+  height:14px; border-radius:4px;
+  background:linear-gradient(90deg, var(--bg-hover) 25%, #475569 50%, var(--bg-hover) 75%);
+  background-size:200% 100%; animation:skeletonShine 1.5s infinite;
+}
+.skeleton-text.short { width:60%; }
+.skeleton-text.long { width:90%; }
+@keyframes skeletonShine {
+  0% { background-position:200% 0; }
+  100% { background-position:-200% 0; }
+}
+
 .status { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
 .status-active { background:rgba(34,197,94,0.15); color:var(--success); }
 .status-hidden { background:rgba(239,68,68,0.15); color:var(--danger); }
@@ -226,6 +247,9 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
 
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySaYzWTSpmcBb3Nas8VX90EjM9CeLfuF5LUw576e5tPTTOT9p7QwaJ3VIPfXbGdwqNow/exec";
+const CACHE_KEY = 'els_admin_products';
+const CACHE_TIME_KEY = 'els_admin_products_time';
+const CACHE_DURATION = 5 * 60 * 1000;
 
 let allProducts = [];
 let allOrders = [];
@@ -271,15 +295,64 @@ async function apiPost(action, data) {
   }
 }
 
+function getCachedProducts() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+    if (cached && cachedTime) {
+      const age = Date.now() - parseInt(cachedTime);
+      if (age < CACHE_DURATION) return JSON.parse(cached);
+    }
+  } catch(e) {}
+  return null;
+}
+
+function saveCache(products) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(products));
+    localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+  } catch(e) {}
+}
+
+function clearCache() {
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_TIME_KEY);
+}
+
+function renderSkeletons(count) {
+  const list = document.getElementById('productList');
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    html += `<div class="skeleton-card"><div class="skeleton-img"></div><div style="flex:1;"><div class="skeleton-text long" style="margin-bottom:8px;"></div><div class="skeleton-text short"></div></div></div>`;
+  }
+  list.innerHTML = html;
+}
+
 async function loadProducts() {
-  document.getElementById('productList').innerHTML = '<div class="loading"><div class="spinner"></div>Loading products...</div>';
+  const cached = getCachedProducts();
+  if (cached && cached.length > 0) {
+    allProducts = cached;
+    updateStats();
+    renderProducts();
+    refreshProducts();
+  } else {
+    renderSkeletons(4);
+    await refreshProducts();
+  }
+}
+
+async function refreshProducts() {
   const data = await apiGet('getProducts');
   if (data.success) {
     allProducts = data.products || [];
+    saveCache(allProducts);
     updateStats();
     renderProducts();
   } else {
-    document.getElementById('productList').innerHTML = '<div class="empty">Failed to load products</div>';
+    const cached = getCachedProducts();
+    if (!cached || cached.length === 0) {
+      document.getElementById('productList').innerHTML = '<div class="empty">Failed to load products</div>';
+    }
   }
 }
 
@@ -308,18 +381,15 @@ function renderProducts() {
   const list = document.getElementById('productList');
   const search = document.getElementById('searchInput').value.toLowerCase();
   const cat = document.getElementById('catFilter').value;
-  
   let filtered = allProducts.filter(p => {
     const matchSearch = !search || (p.name && p.name.toLowerCase().includes(search)) || (p.short_name && p.short_name.toLowerCase().includes(search));
     const matchCat = !cat || p.category === cat;
     return matchSearch && matchCat;
   });
-  
   if (filtered.length === 0) {
     list.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><div>No products found</div></div>';
     return;
   }
-  
   list.innerHTML = filtered.map(p => `
     <div class="product-card">
       <div class="product-main">
@@ -352,7 +422,6 @@ function renderOrders() {
     list.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div>No orders yet</div></div>';
     return;
   }
-  
   list.innerHTML = allOrders.slice().reverse().map(o => `
     <div class="order-card">
       <div class="order-header">
@@ -374,7 +443,6 @@ function switchTab(tab) {
   currentTab = tab;
   document.getElementById('navProducts').classList.toggle('active', tab === 'products');
   document.getElementById('navOrders').classList.toggle('active', tab === 'orders');
-  
   if (tab === 'products') {
     document.getElementById('stats').style.display = 'grid';
     document.getElementById('toolbar').style.display = 'flex';
@@ -423,13 +491,9 @@ function openEditModal(product) {
   document.getElementById('editDesc').value = product.desc || '';
   document.getElementById('editCategory').value = product.category || 'Defender Products';
   document.getElementById('editActive').value = product.active || 'Y';
-  
   const faqContainer = document.getElementById('faqContainer');
   faqContainer.innerHTML = '';
-  if (product.faq && product.faq.length) {
-    product.faq.forEach(f => addFaqField(f.q, f.a));
-  }
-  
+  if (product.faq && product.faq.length) product.faq.forEach(f => addFaqField(f.q, f.a));
   document.getElementById('deleteBtn').style.display = 'block';
   document.getElementById('productModal').classList.add('active');
 }
@@ -440,11 +504,7 @@ function addFaqField(q, a) {
   const container = document.getElementById('faqContainer');
   const div = document.createElement('div');
   div.className = 'faq-item';
-  div.innerHTML = `
-    <input type="text" placeholder="Question" class="faq-q" value="${q || ''}">
-    <input type="text" placeholder="Answer" class="faq-a" value="${a || ''}">
-    <button class="faq-remove" onclick="this.parentElement.remove()">Remove</button>
-  `;
+  div.innerHTML = `<input type="text" placeholder="Question" class="faq-q" value="${q || ''}"><input type="text" placeholder="Answer" class="faq-a" value="${a || ''}"><button class="faq-remove" onclick="this.parentElement.remove()">Remove</button>`;
   container.appendChild(div);
 }
 
@@ -455,10 +515,8 @@ async function saveProduct() {
     const a = item.querySelector('.faq-a').value;
     if (q && a) faqItems.push({q, a});
   });
-  
   const imagesStr = document.getElementById('editImages').value;
   const images = imagesStr.split('\n').map(s => s.trim()).filter(s => s);
-  
   const product = {
     id: editingId || (allProducts.length ? Math.max(...allProducts.map(p => parseInt(p.id)||0)) + 1 : 1),
     name: document.getElementById('editName').value,
@@ -473,17 +531,15 @@ async function saveProduct() {
     faq: faqItems,
     active: document.getElementById('editActive').value
   };
-  
   if (!product.name || !product.price) {
     showToast('Name and price are required!', 'error');
     return;
   }
-  
   const action = editingId ? 'updateProduct' : 'addProduct';
   const res = await apiPost(action, product);
-  
   if (res.success) {
     showToast(editingId ? 'Product updated!' : 'Product added!', 'success');
+    clearCache();
     closeModal();
     loadProducts();
   } else {
@@ -493,10 +549,10 @@ async function saveProduct() {
 
 async function deleteProduct() {
   if (!confirm('Are you sure you want to delete this product?')) return;
-  
   const res = await apiPost('deleteProduct', {id: editingId});
   if (res.success) {
     showToast('Product deleted!', 'success');
+    clearCache();
     closeModal();
     loadProducts();
   } else {
