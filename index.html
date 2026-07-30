@@ -215,9 +215,7 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
   </div>
 </div>
 
-<div id="app">
-  <div class="loading"><div class="loading-spinner"></div><p>Loading products...</p></div>
-</div>
+<div id="app"></div>
 
 <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
 <div class="cart-drawer" id="cartDrawer">
@@ -271,9 +269,8 @@ button{border:none;background:none;cursor:pointer;font-family:inherit}
 const SHEET_URL = "YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE";
 
 // Your contact info - EDIT THESE
-const WHATSAPP_NUMBER = "8801234567890";
-const MESSENGER_URL = "https://m.me/easylifeshopping";
-const CALL_NUMBER = "+8801234567890";
+const WHATSAPP_NUMBER = "8801647347780";
+const CALL_NUMBER = "+8801647347780";
 
 let products = [];
 let cart = JSON.parse(localStorage.getItem("els_cart")||"[]");
@@ -281,6 +278,12 @@ let currentBanner = 0;
 let bannerInterval;
 
 // FALLBACK: 1 Dummy Product Per Category (8 total)
+// CONFIG: Replace with your Google Sheet published CSV URL
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQklCHBt1LceM3W9bQxdtvBrcNaw8KuHyfiRHeJS6s2B9XUVa99ulPVKsA2OiW6L_UVXII0qvOfTs2H/pub?gid=0&single=true&output=csv";
+
+// CONFIG: Replace with your Apps Script Web App URL for saving orders
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySaYzWTSpmcBb3Nas8VX90EjM9CeLfuF5LUw576e5tPTTOT9p7QwaJ3VIPfXbGdwqNow/exec";
+
 const fallbackProducts = [
   {
     id:1, name:"Anti-Slip Bathroom Mat Set", short_name:"Bathroom Mat", price:490, old_price:890, discount:"45% OFF",
@@ -375,18 +378,51 @@ function parseCSV(csvText) {
 }
 
 async function loadProducts() {
-  try {
-    const response = await fetch(SHEET_URL + "&t=" + Date.now());
-    if (!response.ok) throw new Error("Sheet not available");
-    const csvText = await response.text();
-    products = parseCSV(csvText);
-    console.log("Loaded " + products.length + " products from Google Sheet");
-  } catch (e) {
-    console.log("Using fallback products:", e.message);
+  // Show cached or fallback products IMMEDIATELY
+  var cached = localStorage.getItem("els_products");
+  if(cached){
+    try{ products = JSON.parse(cached); }catch(e){ products = fallbackProducts; }
+  } else {
     products = fallbackProducts;
   }
-  localStorage.setItem("els_products", JSON.stringify(products));
   renderHome(document.getElementById("app"));
+
+  // Then try to fetch fresh data in background
+  try{
+    var res = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
+    if(!res.ok) throw new Error("Sheet not available");
+    var csv = await res.text();
+    var lines = csv.split("\n").filter(function(l){ return l.trim(); });
+    var headers = lines[0].split(",").map(function(h){ return h.trim().replace(/^"|"$/g,""); });
+
+    var fresh = lines.slice(1).map(function(line){
+      var vals = line.split(",").map(function(v){ return v.trim().replace(/^"|"$/g,""); });
+      var obj = {};
+      headers.forEach(function(h,i){ obj[h] = vals[i] || ""; });
+      obj.id = parseInt(obj.id) || 0;
+      obj.price = parseInt(obj.price) || 0;
+      obj.old_price = parseInt(obj.old_price) || 0;
+      obj.images = [];
+      if(obj.image) obj.images.push(obj.image);
+      if(obj.image2) obj.images.push(obj.image2);
+      if(obj.image3) obj.images.push(obj.image3);
+      if(obj.image4) obj.images.push(obj.image4);
+      obj.faq = [];
+      for(var j=1; j<=5; j++){
+        var q = obj["faq_q"+j], a = obj["faq_a"+j];
+        if(q && a) obj.faq.push({q:q, a:a});
+      }
+      return obj;
+    }).filter(function(p){ return p.id && p.active !== "N"; });
+
+    if(fresh.length > 0){
+      products = fresh;
+      localStorage.setItem("els_products", JSON.stringify(products));
+      renderHome(document.getElementById("app"));
+    }
+  }catch(e){
+    console.log("Sheet fetch failed:", e.message);
+  }
 }
 
 function formatPrice(n){return "৳"+n.toLocaleString("en-BD")}
@@ -474,7 +510,7 @@ function renderProduct(container, id){
   html += '<div class="pd-option"><div class="pd-option-label">COLOR</div><div class="pd-colors"><button class="pd-color active" onclick="selectColor(this)">White</button><button class="pd-color" onclick="selectColor(this)">Black</button></div></div>';
   html += '<div class="pd-qty-row"><span class="pd-qty-label">Quantity:</span><div class="pd-qty-box"><button onclick="changeQty(-1)">-</button><input type="text" id="pdQty" value="1" readonly><button onclick="changeQty(1)">+</button></div></div>';
   html += '<div style="display:flex;flex-direction:column;gap:10px"><div class="pd-actions-btns"><button class="pd-btn-cart" onclick="addToCart('+p.id+',parseInt(document.getElementById(\'pdQty\').value))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>ADD TO CART</button><button class="pd-btn-preorder">PRE-ORDER</button></div>';
-  html += '<div class="pd-actions-btns"><button class="pd-btn-messenger" onclick="window.open(\''+MESSENGER_URL+'\',\'_blank\')"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.76 1.36 5.23 3.5 6.86V22l4.09-2.24c.78.15 1.58.24 2.41.24 5.52 0 10-4.03 10-9s-4.48-9-10-9zm1 12.5h-2v-2h2v2zm0-3h-2V7h2v4.5z"/></svg>Messenger</button><button class="pd-btn-whatsapp" onclick="window.open(\'https://wa.me/'+WHATSAPP_NUMBER+'?text=I want to order: '+encodeURIComponent(p.name)+'\',\'_blank\')"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp</button></div>';
+  html += '<div class="pd-actions-btns"><button class="pd-btn-whatsapp" onclick="window.open(\'https://wa.me/'+WHATSAPP_NUMBER+'?text=I want to order: '+encodeURIComponent(p.name)+'\',\'_blank\')"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp</button></div>';
   html += '<button class="pd-btn-call" onclick="window.location.href=\'tel:'+CALL_NUMBER+'\'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.56 12.56 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.56 12.56 0 002.81.7A2 2 0 0122 16.92z"/></svg>Call for Order</button></div></div>';
   html += '<div class="pd-tabs"><div class="pd-tab active" onclick="switchTab(this,\'desc\')">DESCRIPTION</div><div class="pd-tab" onclick="switchTab(this,\'faq\')">FAQ</div><div class="pd-tab" onclick="switchTab(this,\'review\')">REVIEWS</div></div>';
   html += '<div class="pd-tab-content" id="tab-desc"><div class="pd-desc">'+p.desc+'</div></div>';
@@ -580,7 +616,25 @@ function showOrderForm(){
   let cartItemsHtml = cart.map(item => item.name + " x" + item.qty + " = " + formatPrice(item.price * item.qty)).join("\\n");
   app.innerHTML='<div class="page"><div class="order-form"><h3>Place Your Order (COD)</h3><form onsubmit="submitOrder(event)"><input type="text" name="name" placeholder="Your Full Name" required><input type="tel" name="phone" placeholder="Phone Number" required><textarea name="address" placeholder="Delivery Address" required></textarea><div class="delivery-options"><label class="delivery-option selected" onclick="selectDelivery(this,60)"><input type="radio" name="delivery" value="60" checked><span class="opt-label">ঢাকা শহরের ভিতরে</span><span class="opt-price">৳60</span></label><label class="delivery-option" onclick="selectDelivery(this,100)"><input type="radio" name="delivery" value="100"><span class="opt-label">ঢাকা শহরের বাইরে</span><span class="opt-price">৳100</span></label></div><textarea name="items" readonly style="background:#f5f5f5">'+cartItemsHtml+'\\nTotal: '+formatPrice(getCartTotal())+'</textarea><input type="hidden" name="total" value="'+getCartTotal()+'"><button type="submit">Confirm Order</button></form></div></div>';
 }
-function selectDelivery(el,price){document.querySelectorAll('.delivery-option').forEach(d=>d.classList.remove('selected'));el.classList.add('selected');el.querySelector('input').checked=true;}
+function selectDelivery(el,price){
+  document.querySelectorAll('.delivery-option').forEach(function(d){ d.classList.remove('selected'); });
+  el.classList.add('selected');
+  el.querySelector('input').checked=true;
+  var subtotal = parseInt(document.querySelector('input[name="subtotal"]').value) || 0;
+  var total = subtotal + price;
+  document.getElementById('orderTotal').textContent = formatPrice(total);
+  document.getElementById('hiddenTotal').value = total;
+}
+async function saveOrderToSheet(orderData){
+  try{
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(orderData)
+    });
+  }catch(e){ console.log("Sheet save failed:", e); }
+}
+
 function submitOrder(e){
   e.preventDefault();
   const form=e.target;
@@ -630,8 +684,11 @@ window.addEventListener("popstate",function(){
   else showPage("home");
 });
 
-updateCartUI();
-loadProducts();
+// Initialize when DOM is ready
+document.addEventListener("DOMContentLoaded", function(){
+  updateCartUI();
+  loadProducts();
+});
 </script>
 </body>
 </html>
