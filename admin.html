@@ -39,12 +39,15 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
   padding:12px 16px; border-radius:var(--radius); font-size:14px; flex:1; min-width:140px;
 }
 .toolbar input:focus, .toolbar select:focus { outline:none; border-color:var(--primary); }
-.btn { padding:12px 20px; border-radius:var(--radius); border:none; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.btn { padding:12px 20px; border-radius:var(--radius); border:none; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
 .btn-primary { background:var(--primary); color:#fff; }
 .btn-primary:hover { background:var(--primary-dark); }
 .btn-danger { background:var(--danger); color:#fff; }
 .btn-success { background:var(--success); color:#fff; }
+.btn-warning { background:var(--warning); color:#000; }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
 .btn-sm { padding:8px 14px; font-size:12px; }
+.btn-xs { padding:6px 10px; font-size:11px; border-radius:8px; }
 
 .product-list { padding:0 20px; }
 .product-card {
@@ -118,9 +121,9 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
 @keyframes spin { to { transform:rotate(360deg); } }
 
 .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--bg-card); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0; z-index:100; }
-.nav-item { background:none; border:none; color:var(--text-muted); font-size:11px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 16px; cursor:pointer; }
+.nav-item { background:none; border:none; color:var(--text-muted); font-size:10px; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 10px; cursor:pointer; flex:1; }
 .nav-item.active { color:var(--primary); }
-.nav-item svg { width:22px; height:22px; }
+.nav-item svg { width:20px; height:20px; }
 
 .order-card { background:var(--bg-card); border-radius:var(--radius); border:1px solid var(--border); margin-bottom:12px; padding:16px; }
 .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
@@ -131,6 +134,45 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
 .order-status.delivered { background:rgba(34,197,94,0.15); color:var(--success); }
 .order-details { font-size:13px; color:var(--text-muted); line-height:1.8; }
 .order-details strong { color:var(--text); }
+.order-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+
+.analytics-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding:0 20px 16px; }
+.analytics-card { background:var(--bg-card); border-radius:var(--radius); padding:16px; border:1px solid var(--border); }
+.analytics-card .number { font-size:24px; font-weight:700; }
+.analytics-card .label { font-size:12px; color:var(--text-muted); margin-top:4px; }
+.analytics-card.revenue .number { color:var(--success); }
+.analytics-card.orders .number { color:var(--primary); }
+.analytics-card.avg .number { color:var(--warning); }
+.analytics-card.conv .number { color:#a78bfa; }
+
+.top-products { padding:0 20px 16px; }
+.top-product-item { display:flex; align-items:center; gap:12px; background:var(--bg-card); border-radius:var(--radius); padding:12px 16px; margin-bottom:8px; border:1px solid var(--border); }
+.top-product-rank { width:28px; height:28px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+.top-product-info { flex:1; }
+.top-product-name { font-size:14px; font-weight:600; }
+.top-product-sold { font-size:12px; color:var(--text-muted); }
+.top-product-revenue { font-size:14px; font-weight:700; color:var(--success); }
+
+.settings-section { padding:0 20px 16px; }
+.settings-card { background:var(--bg-card); border-radius:var(--radius); padding:16px; margin-bottom:12px; border:1px solid var(--border); }
+.settings-card h3 { font-size:15px; margin-bottom:12px; color:var(--text); }
+.color-picker { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.color-option { width:36px; height:36px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:all 0.2s; }
+.color-option.active { border-color:#fff; transform:scale(1.15); }
+.color-option.blue { background:#3b82f6; }
+.color-option.green { background:#22c55e; }
+.color-option.purple { background:#a855f7; }
+.color-option.orange { background:#f97316; }
+.color-option.red { background:#ef4444; }
+.color-option.teal { background:#14b8a6; }
+
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-label { font-size:14px; }
+.toggle-switch { position:relative; width:44px; height:24px; background:var(--bg-hover); border-radius:12px; cursor:pointer; transition:background 0.2s; }
+.toggle-switch.active { background:var(--primary); }
+.toggle-switch::after { content:''; position:absolute; width:20px; height:20px; background:#fff; border-radius:50%; top:2px; left:2px; transition:transform 0.2s; }
+.toggle-switch.active::after { transform:translateX(20px); }
 
 .lock-screen { position:fixed; inset:0; background:var(--bg); z-index:500; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
 .lock-screen input { background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:16px 20px; border-radius:var(--radius); font-size:16px; width:280px; text-align:center; }
@@ -147,6 +189,9 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
   .product-img { width:50px; height:50px; }
   .toolbar { padding:0 12px 12px; }
   .product-list { padding:0 12px; }
+  .analytics-grid { grid-template-columns:repeat(2,1fr); gap:8px; padding:0 12px 12px; }
+  .settings-section { padding:0 12px 12px; }
+  .top-products { padding:0 12px 12px; }
 }
 </style>
 </head>
@@ -163,30 +208,116 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
   <span class="badge" id="totalBadge">0 products</span>
 </div>
 
-<div class="stats" id="stats" style="display:none;">
-  <div class="stat-card"><div class="number" id="statTotal">0</div><div class="label">Total</div></div>
-  <div class="stat-card"><div class="number" id="statActive">0</div><div class="label">Active</div></div>
-  <div class="stat-card"><div class="number" id="statHidden">0</div><div class="label">Hidden</div></div>
+<!-- PRODUCTS TAB -->
+<div id="tab-products">
+  <div class="stats" id="stats" style="display:none;">
+    <div class="stat-card"><div class="number" id="statTotal">0</div><div class="label">Total</div></div>
+    <div class="stat-card"><div class="number" id="statActive">0</div><div class="label">Active</div></div>
+    <div class="stat-card"><div class="number" id="statHidden">0</div><div class="label">Hidden</div></div>
+  </div>
+  <div class="toolbar" id="toolbar" style="display:none;">
+    <input type="text" id="searchInput" placeholder="🔍 Search products..." oninput="filterProducts()">
+    <select id="catFilter" onchange="filterProducts()">
+      <option value="">All Categories</option>
+      <option>Defender Products</option>
+      <option>Easy Cooking</option>
+      <option>Easy Electricity</option>
+      <option>Easy Home Set Up</option>
+      <option>Easy Cleaning</option>
+      <option>Network Solver</option>
+      <option>Cooling & Climate Solver</option>
+      <option>Smart Life Product</option>
+    </select>
+    <button class="btn btn-primary" onclick="openAddModal()">+ Add Product</button>
+  </div>
+  <div class="product-list" id="productList" style="display:none;"></div>
 </div>
 
-<div class="toolbar" id="toolbar" style="display:none;">
-  <input type="text" id="searchInput" placeholder="🔍 Search products..." oninput="filterProducts()">
-  <select id="catFilter" onchange="filterProducts()">
-    <option value="">All Categories</option>
-    <option>Defender Products</option>
-    <option>Easy Cooking</option>
-    <option>Easy Electricity</option>
-    <option>Easy Home Set Up</option>
-    <option>Easy Cleaning</option>
-    <option>Network Solver</option>
-    <option>Cooling & Climate Solver</option>
-    <option>Smart Life Product</option>
-  </select>
-  <button class="btn btn-primary" onclick="openAddModal()">+ Add Product</button>
+<!-- ORDERS TAB -->
+<div id="tab-orders" style="display:none;">
+  <div class="toolbar" style="padding:16px 20px;">
+    <select id="orderStatusFilter" onchange="filterOrders()">
+      <option value="">All Status</option>
+      <option value="new">New</option>
+      <option value="processing">Processing</option>
+      <option value="delivered">Delivered</option>
+    </select>
+  </div>
+  <div class="product-list" id="ordersList"></div>
 </div>
 
-<div class="product-list" id="productList" style="display:none;"></div>
-<div class="product-list" id="ordersList" style="display:none;"></div>
+<!-- ANALYTICS TAB -->
+<div id="tab-analytics" style="display:none;">
+  <div class="analytics-grid">
+    <div class="analytics-card revenue">
+      <div class="number" id="analyticsRevenue">৳0</div>
+      <div class="label">Total Revenue</div>
+    </div>
+    <div class="analytics-card orders">
+      <div class="number" id="analyticsOrders">0</div>
+      <div class="label">Total Orders</div>
+    </div>
+    <div class="analytics-card avg">
+      <div class="number" id="analyticsAvg">৳0</div>
+      <div class="label">Avg Order</div>
+    </div>
+    <div class="analytics-card conv">
+      <div class="number" id="analyticsConversion">0%</div>
+      <div class="label">Conversion</div>
+    </div>
+  </div>
+  <div class="top-products" id="topProducts"></div>
+</div>
+
+<!-- SETTINGS TAB -->
+<div id="tab-settings" style="display:none;">
+  <div class="settings-section">
+    <div class="settings-card">
+      <h3>🎨 Theme Color</h3>
+      <div class="color-picker">
+        <div class="color-option blue active" onclick="setThemeColor('#3b82f6',this)"></div>
+        <div class="color-option green" onclick="setThemeColor('#22c55e',this)"></div>
+        <div class="color-option purple" onclick="setThemeColor('#a855f7',this)"></div>
+        <div class="color-option orange" onclick="setThemeColor('#f97316',this)"></div>
+        <div class="color-option red" onclick="setThemeColor('#ef4444',this)"></div>
+        <div class="color-option teal" onclick="setThemeColor('#14b8a6',this)"></div>
+      </div>
+    </div>
+    <div class="settings-card">
+      <h3>🏪 Business Info</h3>
+      <div class="form-group"><label>Business Name</label><input type="text" id="settingBizName" placeholder="Easy Life Shopping"></div>
+      <div class="form-group"><label>WhatsApp Number</label><input type="text" id="settingWhatsApp" placeholder="017XXXXXXXX"></div>
+      <div class="form-group"><label>Business Phone</label><input type="text" id="settingPhone" placeholder="017XXXXXXXX"></div>
+      <button class="btn btn-success" onclick="saveSettings()">💾 Save Business Info</button>
+    </div>
+    <div class="settings-card">
+      <h3>🔒 Security</h3>
+      <div class="form-group"><label>Current Password</label><input type="password" id="settingOldPass" placeholder="Enter current password"></div>
+      <div class="form-group"><label>New Password</label><input type="password" id="settingNewPass" placeholder="Enter new password"></div>
+      <button class="btn btn-primary" onclick="changePassword()">🔑 Change Password</button>
+    </div>
+    <div class="settings-card">
+      <h3>⚙️ Page Options</h3>
+      <div class="toggle-row">
+        <span class="toggle-label">Show Search Bar</span>
+        <div class="toggle-switch active" id="toggleSearch" onclick="toggleSetting(this,'showSearch')"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Show Categories</span>
+        <div class="toggle-switch active" id="toggleCategories" onclick="toggleSetting(this,'showCategories')"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Show FAQ on Product Page</span>
+        <div class="toggle-switch active" id="toggleFAQ" onclick="toggleSetting(this,'showFAQ')"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Show Related Products</span>
+        <div class="toggle-switch" id="toggleRelated" onclick="toggleSetting(this,'showRelated')"></div>
+      </div>
+      <button class="btn btn-success" onclick="savePageSettings()" style="margin-top:12px;">💾 Save Page Settings</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast-container" id="toastContainer"></div>
 
@@ -243,29 +374,33 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
   <button class="nav-item" onclick="switchTab('orders')" id="navOrders">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>Orders
   </button>
+  <button class="nav-item" onclick="switchTab('analytics')" id="navAnalytics">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>Analytics
+  </button>
+  <button class="nav-item" onclick="switchTab('settings')" id="navSettings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 20.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Settings
+  </button>
 </div>
 
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySaYzWTSpmcBb3Nas8VX90EjM9CeLfuF5LUw576e5tPTTOT9p7QwaJ3VIPfXbGdwqNow/exec";
 const CACHE_KEY = 'els_admin_products';
 const CACHE_TIME_KEY = 'els_admin_products_time';
-const CACHE_DURATION = 60 * 1000; // 1 minute cache
+const CACHE_DURATION = 60 * 1000;
 
 let allProducts = [];
 let allOrders = [];
 let currentTab = 'products';
 let editingId = null;
+let adminPassword = 'easy123';
 
 function unlock() {
   const pass = document.getElementById('adminPass').value;
-  if (pass === 'easy123') {
+  if (pass === adminPassword) {
     document.getElementById('lockScreen').style.display = 'none';
     document.getElementById('header').style.display = 'flex';
-    document.getElementById('stats').style.display = 'grid';
-    document.getElementById('toolbar').style.display = 'flex';
-    document.getElementById('productList').style.display = 'block';
     document.getElementById('bottomNav').style.display = 'flex';
-    loadProducts();
+    switchTab('products');
   } else {
     showToast('Wrong password!', 'error');
   }
@@ -335,7 +470,7 @@ async function loadProducts(forceRefresh = false) {
       allProducts = cached;
       updateStats();
       renderProducts();
-      refreshProducts(); // background refresh
+      refreshProducts();
       return;
     }
   }
@@ -418,45 +553,140 @@ function renderProducts() {
 
 function filterProducts() { renderProducts(); }
 
+function filterOrders() { renderOrders(); }
+
 function renderOrders() {
   const list = document.getElementById('ordersList');
-  if (allOrders.length === 0) {
-    list.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div>No orders yet</div></div>';
+  const statusFilter = document.getElementById('orderStatusFilter').value;
+  let filtered = allOrders;
+  if (statusFilter) {
+    filtered = allOrders.filter(o => (o.status || 'new').toLowerCase() === statusFilter);
+  }
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div>No orders found</div></div>';
     return;
   }
-  list.innerHTML = allOrders.slice().reverse().map(o => `
+  list.innerHTML = filtered.slice().reverse().map(o => {
+    const phone = (o.phone || '').replace(/[^0-9+]/g, '');
+    const waMsg = encodeURIComponent(`Assalamualaikum ${o.name || 'bhai'},\nYour order #${o.order_id || 'N/A'} (${o.product_name || 'Product'}) is confirmed.\nTotal: ৳${o.total_price || 0}\nDelivery: 1-2 days in Dhaka.\nThank you! - Easy Life Shopping`);
+    const orderDetails = `Order #${o.order_id || 'N/A'}\nName: ${o.name || 'N/A'}\nPhone: ${o.phone || 'N/A'}\nProduct: ${o.product_name || 'N/A'}\nQty: ${o.quantity || 1}\nTotal: ৳${o.total_price || 0}\nAddress: ${o.address || 'N/A'}\nStatus: ${o.status || 'New'}`;
+    return `
     <div class="order-card">
       <div class="order-header">
         <span class="order-id">#${o.order_id || 'N/A'}</span>
         <span class="order-status ${(o.status || 'new').toLowerCase()}">${o.status || 'New'}</span>
       </div>
       <div class="order-details">
-        <div><strong>${o.name || 'No name'}</strong> • ${o.phone || 'No phone'}</div>
+        <div><strong>${o.name || 'No name'}</strong></div>
+        <div>${o.phone || 'No phone'}</div>
         <div>${o.product_name || 'No product'} × ${o.quantity || 1}</div>
         <div>Total: <strong>৳${o.total_price || 0}</strong></div>
         <div>${o.address || 'No address'}</div>
         <div style="margin-top:6px; font-size:11px; color:#64748b;">${o.timestamp || ''}</div>
       </div>
+      <div class="order-actions">
+        ${phone ? `<a href="tel:${phone}" class="btn btn-xs btn-primary">📞 Call</a>` : ''}
+        ${phone ? `<a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" class="btn btn-xs btn-success">💬 WhatsApp</a>` : ''}
+        <button class="btn btn-xs btn-outline" onclick="copyToClipboard('${orderDetails.replace(/'/g, "\'")}')">📋 Copy</button>
+        <button class="btn btn-xs btn-warning" onclick="updateOrderStatus('${o.order_id || ''}', 'processing')">🚚 Processing</button>
+        <button class="btn btn-xs btn-success" onclick="updateOrderStatus('${o.order_id || ''}', 'delivered')">✅ Delivered</button>
+      </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
+}
+
+async function updateOrderStatus(orderId, status) {
+  const res = await apiPost('updateOrderStatus', {order_id: orderId, status: status});
+  if (res.success) {
+    showToast(`Order marked ${status}!`, 'success');
+    loadOrders();
+  } else {
+    showToast(res.error || 'Failed to update', 'error');
+  }
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard!', 'success');
+  }).catch(() => {
+    showToast('Failed to copy', 'error');
+  });
+}
+
+function renderAnalytics() {
+  const totalRevenue = allOrders.reduce((sum, o) => sum + (Number(o.total_price) || 0), 0);
+  const totalOrders = allOrders.length;
+  const avgOrder = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
+  const conversion = allProducts.length > 0 ? Math.min(((totalOrders / allProducts.length) * 100).toFixed(1), 100) : 0;
+
+  document.getElementById('analyticsRevenue').textContent = '৳' + totalRevenue.toLocaleString();
+  document.getElementById('analyticsOrders').textContent = totalOrders;
+  document.getElementById('analyticsAvg').textContent = '৳' + avgOrder;
+  document.getElementById('analyticsConversion').textContent = conversion + '%';
+
+  // Top products
+  const productSales = {};
+  allOrders.forEach(o => {
+    const name = o.product_name || 'Unknown';
+    if (!productSales[name]) productSales[name] = {count:0, revenue:0};
+    productSales[name].count += Number(o.quantity) || 1;
+    productSales[name].revenue += Number(o.total_price) || 0;
+  });
+
+  const topProducts = Object.entries(productSales)
+    .sort((a,b) => b[1].count - a[1].count)
+    .slice(0, 5);
+
+  const topContainer = document.getElementById('topProducts');
+  if (topProducts.length === 0) {
+    topContainer.innerHTML = '<div class="empty" style="padding:30px;">No sales data yet</div>';
+    return;
+  }
+
+  topContainer.innerHTML = '<h3 style="padding:0 20px 12px; font-size:15px;">🏆 Top Selling Products</h3>' +
+    topProducts.map((p, i) => `
+      <div class="top-product-item">
+        <div class="top-product-rank">${i+1}</div>
+        <div class="top-product-info">
+          <div class="top-product-name">${p[0]}</div>
+          <div class="top-product-sold">${p[1].count} sold</div>
+        </div>
+        <div class="top-product-revenue">৳${p[1].revenue.toLocaleString()}</div>
+      </div>
+    `).join('');
 }
 
 function switchTab(tab) {
   currentTab = tab;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('navProducts').classList.toggle('active', tab === 'products');
   document.getElementById('navOrders').classList.toggle('active', tab === 'orders');
+  document.getElementById('navAnalytics').classList.toggle('active', tab === 'analytics');
+  document.getElementById('navSettings').classList.toggle('active', tab === 'settings');
+
+  document.getElementById('tab-products').style.display = tab === 'products' ? 'block' : 'none';
+  document.getElementById('tab-orders').style.display = tab === 'orders' ? 'block' : 'none';
+  document.getElementById('tab-analytics').style.display = tab === 'analytics' ? 'block' : 'none';
+  document.getElementById('tab-settings').style.display = tab === 'settings' ? 'block' : 'none';
+
+  document.getElementById('stats').style.display = tab === 'products' ? 'grid' : 'none';
+  document.getElementById('toolbar').style.display = tab === 'products' ? 'flex' : 'none';
+  document.getElementById('productList').style.display = tab === 'products' ? 'block' : 'none';
+
   if (tab === 'products') {
-    document.getElementById('stats').style.display = 'grid';
-    document.getElementById('toolbar').style.display = 'flex';
-    document.getElementById('productList').style.display = 'block';
-    document.getElementById('ordersList').style.display = 'none';
+    document.getElementById('header').style.display = 'flex';
     loadProducts();
-  } else {
-    document.getElementById('stats').style.display = 'none';
-    document.getElementById('toolbar').style.display = 'none';
-    document.getElementById('productList').style.display = 'none';
-    document.getElementById('ordersList').style.display = 'block';
+  } else if (tab === 'orders') {
+    document.getElementById('header').style.display = 'flex';
     loadOrders();
+  } else if (tab === 'analytics') {
+    document.getElementById('header').style.display = 'flex';
+    document.getElementById('totalBadge').textContent = 'Analytics';
+    renderAnalytics();
+  } else if (tab === 'settings') {
+    document.getElementById('header').style.display = 'flex';
+    document.getElementById('totalBadge').textContent = 'Settings';
   }
 }
 
@@ -543,7 +773,7 @@ async function saveProduct() {
     showToast(editingId ? 'Product updated!' : 'Product added!', 'success');
     clearCache();
     closeModal();
-    loadProducts(true); // force fresh fetch
+    loadProducts(true);
   } else {
     showToast(res.error || 'Failed to save', 'error');
   }
@@ -556,11 +786,68 @@ async function deleteProduct() {
     showToast('Product deleted!', 'success');
     clearCache();
     closeModal();
-    loadProducts(true); // force fresh fetch
+    loadProducts(true);
   } else {
     showToast(res.error || 'Failed to delete', 'error');
   }
 }
+
+// ===== SETTINGS FUNCTIONS =====
+function setThemeColor(color, el) {
+  document.documentElement.style.setProperty('--primary', color);
+  document.querySelectorAll('.color-option').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleSetting(el, key) {
+  el.classList.toggle('active');
+}
+
+function saveSettings() {
+  const bizName = document.getElementById('settingBizName').value;
+  const wa = document.getElementById('settingWhatsApp').value;
+  const phone = document.getElementById('settingPhone').value;
+  localStorage.setItem('els_settings_bizName', bizName);
+  localStorage.setItem('els_settings_wa', wa);
+  localStorage.setItem('els_settings_phone', phone);
+  showToast('Business info saved!', 'success');
+}
+
+function savePageSettings() {
+  const showSearch = document.getElementById('toggleSearch').classList.contains('active');
+  const showCat = document.getElementById('toggleCategories').classList.contains('active');
+  const showFAQ = document.getElementById('toggleFAQ').classList.contains('active');
+  const showRelated = document.getElementById('toggleRelated').classList.contains('active');
+  localStorage.setItem('els_settings_showSearch', showSearch);
+  localStorage.setItem('els_settings_showCat', showCat);
+  localStorage.setItem('els_settings_showFAQ', showFAQ);
+  localStorage.setItem('els_settings_showRelated', showRelated);
+  showToast('Page settings saved!', 'success');
+}
+
+function changePassword() {
+  const oldPass = document.getElementById('settingOldPass').value;
+  const newPass = document.getElementById('settingNewPass').value;
+  if (oldPass !== adminPassword) {
+    showToast('Wrong current password!', 'error');
+    return;
+  }
+  if (!newPass || newPass.length < 4) {
+    showToast('Password must be at least 4 characters', 'error');
+    return;
+  }
+  adminPassword = newPass;
+  localStorage.setItem('els_admin_password', newPass);
+  showToast('Password changed successfully!', 'success');
+  document.getElementById('settingOldPass').value = '';
+  document.getElementById('settingNewPass').value = '';
+}
+
+// Load saved password if exists
+try {
+  const savedPass = localStorage.getItem('els_admin_password');
+  if (savedPass) adminPassword = savedPass;
+} catch(e) {}
 
 function showToast(message, type) {
   const container = document.getElementById('toastContainer');
