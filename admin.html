@@ -249,7 +249,7 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySaYzWTSpmcBb3Nas8VX90EjM9CeLfuF5LUw576e5tPTTOT9p7QwaJ3VIPfXbGdwqNow/exec";
 const CACHE_KEY = 'els_admin_products';
 const CACHE_TIME_KEY = 'els_admin_products_time';
-const CACHE_DURATION = 5 * 60 * 1000;
+const CACHE_DURATION = 60 * 1000; // 1 minute cache
 
 let allProducts = [];
 let allOrders = [];
@@ -328,17 +328,19 @@ function renderSkeletons(count) {
   list.innerHTML = html;
 }
 
-async function loadProducts() {
-  const cached = getCachedProducts();
-  if (cached && cached.length > 0) {
-    allProducts = cached;
-    updateStats();
-    renderProducts();
-    refreshProducts();
-  } else {
-    renderSkeletons(4);
-    await refreshProducts();
+async function loadProducts(forceRefresh = false) {
+  if (!forceRefresh) {
+    const cached = getCachedProducts();
+    if (cached && cached.length > 0) {
+      allProducts = cached;
+      updateStats();
+      renderProducts();
+      refreshProducts(); // background refresh
+      return;
+    }
   }
+  renderSkeletons(4);
+  await refreshProducts();
 }
 
 async function refreshProducts() {
@@ -541,7 +543,7 @@ async function saveProduct() {
     showToast(editingId ? 'Product updated!' : 'Product added!', 'success');
     clearCache();
     closeModal();
-    loadProducts();
+    loadProducts(true); // force fresh fetch
   } else {
     showToast(res.error || 'Failed to save', 'error');
   }
@@ -554,7 +556,7 @@ async function deleteProduct() {
     showToast('Product deleted!', 'success');
     clearCache();
     closeModal();
-    loadProducts();
+    loadProducts(true); // force fresh fetch
   } else {
     showToast(res.error || 'Failed to delete', 'error');
   }
