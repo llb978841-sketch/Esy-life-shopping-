@@ -949,7 +949,7 @@ async function saveProduct() {
     old_price: parseInt(document.getElementById('editOldPrice').value) || 0,
     discount: document.getElementById('editDiscount').value,
     image: document.getElementById('editImage').value,
-    images: images,
+    images: [document.getElementById('editImage').value].concat(galleryImages).filter(function(u){ return u; }),
     category: document.getElementById('editCategory').value,
     desc: document.getElementById('editDesc').value,
     faq: faqItems,
