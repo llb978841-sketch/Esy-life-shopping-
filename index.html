@@ -679,11 +679,11 @@ function selectDelivery(el,price){
 }
 async function saveOrderToSheet(orderData){
   try{
-    await fetch(APPS_SCRIPT_URL + "?action=saveOrder", {
+    fetch(APPS_SCRIPT_URL + "?action=saveOrder", {
       method: "POST",
       headers: {"Content-Type": "text/plain;charset=utf-8"},
       body: JSON.stringify(orderData)
-    });
+    }).catch(function(e){ console.log("Sheet save failed:", e); });
   }catch(e){ console.log("Sheet save failed:", e); }
 }
 
@@ -712,14 +712,14 @@ function submitOrder(e){
   const orderId = "ELS" + Date.now().toString(36).toUpperCase();
 
   const data={
-    orderId:orderId,
+    order_id:orderId,
     name:name,
     phone:phone,
     address:address,
-    items:itemsText,
-    subtotal:subtotal,
-    delivery:delivery,
-    total:total,
+    product_name:itemsText,
+    quantity:pricedItems.reduce(function(s,i){return s+i.qty;},0),
+    total_price:total,
+    status:"new",
     timestamp:new Date().toISOString()
   };
 
