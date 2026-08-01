@@ -284,7 +284,7 @@ let currentOrderSource = "cart"; // "cart" | "single" - controls whether cart ge
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQklCHBt1LceM3W9bQxdtvBrcNaw8KuHyfiRHeJS6s2B9XUVa99ulPVKsA2OiW6L_UVXII0qvOfTs2H/pub?gid=0&single=true&output=csv";
 
 // CONFIG: Replace with your Apps Script Web App URL for saving orders
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrR4g817pz6Qlg5zogN6rjE_0vjhMwhqxo3XSgbn_sbS1EIJL1PBkjAau9ruT-bGku5Q/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJY460CDv17LoFKCICvhd_OeHCIr7BjadG2onRbLhywR5LTxjYnM_eKyjHB9wCVm4IbQ/exec";
 
 const fallbackProducts = [
   {
@@ -679,11 +679,11 @@ function selectDelivery(el,price){
 }
 async function saveOrderToSheet(orderData){
   try{
-    await fetch(APPS_SCRIPT_URL + "?action=saveOrder", {
+    fetch(APPS_SCRIPT_URL + "?action=saveOrder", {
       method: "POST",
       headers: {"Content-Type": "text/plain;charset=utf-8"},
       body: JSON.stringify(orderData)
-    });
+    }).catch(function(e){ console.log("Sheet save failed:", e); });
   }catch(e){ console.log("Sheet save failed:", e); }
 }
 
@@ -712,14 +712,14 @@ function submitOrder(e){
   const orderId = "ELS" + Date.now().toString(36).toUpperCase();
 
   const data={
-    orderId:orderId,
+    order_id:orderId,
     name:name,
     phone:phone,
     address:address,
-    items:itemsText,
-    subtotal:subtotal,
-    delivery:delivery,
-    total:total,
+    product_name:itemsText,
+    quantity:pricedItems.reduce(function(s,i){return s+i.qty;},0),
+    total_price:total,
+    status:"new",
     timestamp:new Date().toISOString()
   };
 
