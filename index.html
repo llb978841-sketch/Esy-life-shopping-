@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Easy Life Shopping</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--primary:#FF6B00;--primary-light:#FFF3E0;--text:#1a1a1a;--text-light:#666;--border:#e5e5e5;--bg:#f5f5f5;--white:#fff;--green:#00C853;--red:#FF1744;--blue:#0084FF;--wa:#25D366;--navy:#1a237e}
@@ -379,7 +380,6 @@ function parseCSV(csvText) {
 }
 
 async function loadProducts() {
-  // Show cached or fallback products IMMEDIATELY
   var cached = localStorage.getItem("els_products");
   if(cached){
     try{ products = JSON.parse(cached); }catch(e){ products = fallbackProducts; }
@@ -388,26 +388,29 @@ async function loadProducts() {
   }
   renderHome(document.getElementById("app"));
 
-  // Then try to fetch fresh data in background
   try{
     var res = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
     if(!res.ok) throw new Error("Sheet not available");
     var csv = await res.text();
-    var lines = csv.split("\n").filter(function(l){ return l.trim(); });
-    var headers = lines[0].split(",").map(function(h){ return h.trim().replace(/^"|"$/g,""); });
 
-    var fresh = lines.slice(1).map(function(line){
-      var vals = line.split(",").map(function(v){ return v.trim().replace(/^"|"$/g,""); });
-      var obj = {};
-      headers.forEach(function(h,i){ obj[h] = vals[i] || ""; });
+    var parsed = Papa.parse(csv, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: false
+    });
+
+    var fresh = parsed.data.map(function(obj){
       obj.id = parseInt(obj.id) || 0;
       obj.price = parseInt(obj.price) || 0;
       obj.old_price = parseInt(obj.old_price) || 0;
-      obj.images = [];
-      if(obj.image) obj.images.push(obj.image);
-      if(obj.image2) obj.images.push(obj.image2);
-      if(obj.image3) obj.images.push(obj.image3);
-      if(obj.image4) obj.images.push(obj.image4);
+
+      var imgList = [];
+      if(obj.images) {
+        imgList = String(obj.images).split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+      }
+      obj.images = imgList;
+      obj.image = imgList[0] || '';
+
       obj.faq = [];
       for(var j=1; j<=5; j++){
         var q = obj["faq_q"+j], a = obj["faq_a"+j];
