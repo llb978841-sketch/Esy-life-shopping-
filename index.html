@@ -551,12 +551,12 @@ function renderShop(container){
   });
   html += '</div><div class="section" style="padding-top:8px"><div class="product-grid" id="shopGrid">';
   prods.forEach(p => {
-    html += '<div class="product-card shop-card" data-cat="'+p.category+'" onclick="openProduct('+p.id+')"><div class="product-img-wrap"><span class="discount-badge">'+p.discount+'</span><img class="product-img" src="'+p.image+'" alt="'+p.name+'" loading="lazy" onerror="this.src=\'https://via.placeholder.com/300x300/f5f5f5/999?text=No+Image\'"></div><div class="product-info"><div class="product-name">'+p.short_name+'</div><div class="product-price"><span class="price-old">'+formatPrice(p.old_price)+'</span><span class="price-new">'+formatPrice(p.price)+'</span></div><button class="btn-add-cart" onclick="event.stopPropagation();addToCart('+p.id+')">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>Add to Cart</button></div></div>';
+    html += '<div class="product-card shop-card" data-cat="'+(p.category||"").trim()+'" onclick="openProduct('+p.id+')"><div class="product-img-wrap"><span class="discount-badge">'+p.discount+'</span><img class="product-img" src="'+p.image+'" alt="'+p.name+'" loading="lazy" onerror="this.src=\'https://via.placeholder.com/300x300/f5f5f5/999?text=No+Image\'"></div><div class="product-info"><div class="product-name">'+p.short_name+'</div><div class="product-price"><span class="price-old">'+formatPrice(p.old_price)+'</span><span class="price-new">'+formatPrice(p.price)+'</span></div><button class="btn-add-cart" onclick="event.stopPropagation();addToCart('+p.id+')">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>Add to Cart</button></div></div>';
   });
   html += '</div></div></div>';
   container.innerHTML = html;
 }
-function filterShop(el,cat){document.querySelectorAll(".shop-filter").forEach(f=>f.classList.remove("active"));el.classList.add("active");document.querySelectorAll(".shop-card").forEach(card=>{card.style.display=(cat==="All"||card.dataset.cat===cat)?"block":"none";});}
+function filterShop(el,cat){document.querySelectorAll(".shop-filter").forEach(f=>f.classList.remove("active"));el.classList.add("active");document.querySelectorAll(".shop-card").forEach(card=>{var cardCat=(card.dataset.cat||"").trim();card.style.display=(cat==="All"||cardCat===cat)?"block":"none";});}
 
 function renderSearch(container){
   const prods = products.length ? products.slice(0,8) : fallbackProducts;
