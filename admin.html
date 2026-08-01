@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Easy Life Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
 <style>
 :root {
   --bg: #0f172a;
@@ -22,6 +23,7 @@
   --shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
 }
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+.hide { display:none !important; }
 body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:80px; }
 
 .header { background:var(--bg-card); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:var(--shadow); }
@@ -180,6 +182,21 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
 
 .empty { text-align:center; padding:60px 20px; color:var(--text-muted); }
 .empty svg { width:64px; height:64px; margin-bottom:16px; opacity:0.3; }
+
+.image-upload-box { position:relative; width:100%; height:170px; border:2px dashed var(--border); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; background:var(--bg); transition:border-color .2s; }
+.image-upload-box:hover, .image-upload-box.drag-over { border-color:var(--primary); }
+.image-upload-box .image-preview { width:100%; height:100%; object-fit:cover; }
+.image-upload-placeholder { display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--text-muted); font-size:13px; text-align:center; padding:0 16px; }
+.image-upload-placeholder svg { opacity:.6; }
+.image-change-hint { position:absolute; bottom:8px; right:8px; background:rgba(15,23,42,.85); color:#fff; font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; }
+.gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:8px; margin-bottom:10px; }
+.gallery-thumb { position:relative; width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:var(--bg); }
+.gallery-thumb img { width:100%; height:100%; object-fit:cover; }
+.gallery-remove { position:absolute; top:3px; right:3px; width:20px; height:20px; background:rgba(0,0,0,.75); color:#fff; border:none; border-radius:50%; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.gallery-empty { grid-column:1/-1; text-align:center; padding:18px; color:var(--text-muted); font-size:12px; border:1px dashed var(--border); border-radius:8px; }
+.manual-url-toggle { display:inline-block; font-size:12px; color:var(--primary); cursor:pointer; margin-top:8px; }
+.manual-url-box { display:flex; gap:8px; margin-top:8px; }
+.manual-url-box input { font-size:12px !important; padding:10px !important; }
 
 @media(max-width:400px) {
   .stats { grid-template-columns:repeat(3,1fr); gap:8px; padding:12px; }
@@ -347,8 +364,33 @@ body { background:var(--bg); color:var(--text); min-height:100vh; padding-bottom
           </select>
         </div>
       </div>
-      <div class="form-group"><label>Main Image URL</label><input type="text" id="editImage" placeholder="https://..."></div>
-      <div class="form-group"><label>Gallery Images (one per line)</label><textarea id="editImages" rows="3" placeholder="https://...&#10;https://..."></textarea></div>
+      <div class="form-group">
+        <label>Main Product Image</label>
+        <div class="image-upload-box" id="mainImageBox" onclick="openMainImageWidget()">
+          <img id="mainImagePreview" class="image-preview hide" src="" alt="Main product image">
+          <div class="image-upload-placeholder" id="mainImagePlaceholder">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>Tap to upload main image</span>
+          </div>
+          <div class="image-change-hint hide" id="mainImageHint">Tap to change</div>
+        </div>
+        <input type="hidden" id="editImage">
+        <span class="manual-url-toggle" onclick="event.stopPropagation();toggleManualUrl('main')">or paste an image URL instead</span>
+        <div class="manual-url-box hide" id="mainUrlBox">
+          <input type="text" id="editImageUrlManual" placeholder="https://..." oninput="setMainImageFromUrl(this.value)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Gallery Images</label>
+        <div class="gallery-grid" id="galleryGrid"></div>
+        <button type="button" class="btn btn-sm btn-outline" onclick="openGalleryWidget()" style="width:100%;">📤 Upload Gallery Images</button>
+        <input type="hidden" id="editImages">
+        <span class="manual-url-toggle" onclick="toggleManualUrl('gallery')">or paste image URLs instead</span>
+        <div class="manual-url-box hide" id="galleryUrlBox" style="flex-direction:column;">
+          <textarea id="galleryUrlInput" rows="2" placeholder="One URL per line" style="font-size:12px;"></textarea>
+          <button type="button" class="btn btn-xs btn-outline" onclick="addGalleryUrls()" style="margin-top:6px;">+ Add URLs</button>
+        </div>
+      </div>
       <div class="form-group"><label>Description (HTML allowed)</label><textarea id="editDesc" rows="4" placeholder="<h2>Title</h2><p>Description...</p>"></textarea></div>
       <div class="form-group">
         <label>FAQ Questions & Answers</label>
@@ -393,6 +435,130 @@ let allOrders = [];
 let currentTab = 'products';
 let editingId = null;
 let adminPassword = 'easy123';
+
+// ===== CLOUDINARY IMAGE UPLOAD =====
+const CLOUDINARY_CLOUD_NAME = "lv8fo8si";
+const CLOUDINARY_UPLOAD_PRESET = "easy life upload";
+let galleryImages = []; // URLs for the product currently open in the modal
+
+const CLOUDINARY_WIDGET_STYLES = {
+  palette: {
+    window: '#1e293b', windowBorder: '#334155', tabIcon: '#3b82f6',
+    menuIcons: '#94a3b8', textDark: '#f1f5f9', textLight: '#ffffff',
+    link: '#3b82f6', action: '#3b82f6', inactiveTabIcon: '#64748b',
+    error: '#ef4444', inProgress: '#3b82f6', complete: '#22c55e', sourceBg: '#0f172a'
+  }
+};
+
+function cloudinaryThumb(url, size) {
+  size = size || 150;
+  if (!url || url.indexOf('/upload/') === -1) return url; // manually pasted / non-Cloudinary URL - leave as-is
+  return url.replace('/upload/', `/upload/w_${size},h_${size},c_fill,g_auto,q_auto,f_auto/`);
+}
+
+function openMainImageWidget() {
+  if (typeof cloudinary === 'undefined') { showToast('Upload widget failed to load - check your connection', 'error'); return; }
+  cloudinary.openUploadWidget({
+    cloudName: CLOUDINARY_CLOUD_NAME,
+    uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+    sources: ['local', 'camera', 'url'],
+    multiple: false,
+    maxFiles: 1,
+    cropping: true,
+    croppingAspectRatio: 1,
+    showSkipCropButton: true,
+    maxFileSize: 8000000,
+    clientAllowedFormats: ['jpg','jpeg','png','webp'],
+    styles: CLOUDINARY_WIDGET_STYLES
+  }, function(error, result) {
+    if (!error && result && result.event === 'success') {
+      const url = result.info.secure_url;
+      document.getElementById('editImage').value = url;
+      const preview = document.getElementById('mainImagePreview');
+      preview.src = cloudinaryThumb(url, 500);
+      preview.classList.remove('hide');
+      document.getElementById('mainImagePlaceholder').classList.add('hide');
+      document.getElementById('mainImageHint').classList.remove('hide');
+      showToast('Main image uploaded!', 'success');
+    } else if (error) {
+      showToast('Main image upload failed', 'error');
+    }
+  });
+}
+
+function openGalleryWidget() {
+  if (typeof cloudinary === 'undefined') { showToast('Upload widget failed to load - check your connection', 'error'); return; }
+  cloudinary.openUploadWidget({
+    cloudName: CLOUDINARY_CLOUD_NAME,
+    uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+    sources: ['local', 'camera', 'url'],
+    multiple: true,
+    maxFiles: 6,
+    maxFileSize: 8000000,
+    clientAllowedFormats: ['jpg','jpeg','png','webp'],
+    styles: CLOUDINARY_WIDGET_STYLES
+  }, function(error, result) {
+    if (!error && result && result.event === 'success') {
+      galleryImages.push(result.info.secure_url);
+      renderGalleryGrid();
+    } else if (error) {
+      showToast('Gallery image upload failed', 'error');
+    }
+  });
+}
+
+function renderGalleryGrid() {
+  const grid = document.getElementById('galleryGrid');
+  if (!galleryImages.length) {
+    grid.innerHTML = '<div class="gallery-empty">No gallery images yet</div>';
+  } else {
+    grid.innerHTML = galleryImages.map((url, i) => `
+      <div class="gallery-thumb">
+        <img src="${cloudinaryThumb(url,150)}" onerror="this.src='https://via.placeholder.com/150'">
+        <button type="button" class="gallery-remove" onclick="removeGalleryImage(${i})">&times;</button>
+      </div>
+    `).join('');
+  }
+  document.getElementById('editImages').value = galleryImages.join('\n');
+}
+
+function removeGalleryImage(i) {
+  galleryImages.splice(i, 1);
+  renderGalleryGrid();
+}
+
+function addGalleryUrls() {
+  const ta = document.getElementById('galleryUrlInput');
+  const urls = ta.value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!urls.length) return;
+  galleryImages.push(...urls);
+  renderGalleryGrid();
+  ta.value = '';
+  showToast(urls.length + ' image URL(s) added', 'success');
+}
+
+function setMainImageFromUrl(url) {
+  url = url.trim();
+  document.getElementById('editImage').value = url;
+  const preview = document.getElementById('mainImagePreview');
+  const placeholder = document.getElementById('mainImagePlaceholder');
+  const hint = document.getElementById('mainImageHint');
+  if (url) {
+    preview.src = cloudinaryThumb(url, 500);
+    preview.classList.remove('hide');
+    placeholder.classList.add('hide');
+    hint.classList.remove('hide');
+  } else {
+    preview.classList.add('hide');
+    placeholder.classList.remove('hide');
+    hint.classList.add('hide');
+  }
+}
+
+function toggleManualUrl(which) {
+  const box = document.getElementById(which === 'main' ? 'mainUrlBox' : 'galleryUrlBox');
+  box.classList.toggle('hide');
+}
 
 function unlock() {
   const pass = document.getElementById('adminPass').value;
@@ -706,6 +872,15 @@ function openAddModal() {
   document.getElementById('editActive').value = 'Y';
   document.getElementById('faqContainer').innerHTML = '';
   document.getElementById('deleteBtn').style.display = 'none';
+  document.getElementById('editImageUrlManual').value = '';
+  document.getElementById('mainImagePreview').classList.add('hide');
+  document.getElementById('mainImagePlaceholder').classList.remove('hide');
+  document.getElementById('mainImageHint').classList.add('hide');
+  document.getElementById('mainUrlBox').classList.add('hide');
+  document.getElementById('galleryUrlBox').classList.add('hide');
+  document.getElementById('galleryUrlInput').value = '';
+  galleryImages = [];
+  renderGalleryGrid();
   document.getElementById('productModal').classList.add('active');
 }
 
@@ -719,7 +894,6 @@ function openEditModal(product) {
   document.getElementById('editOldPrice').value = product.old_price || '';
   document.getElementById('editDiscount').value = product.discount || '';
   document.getElementById('editImage').value = product.image || '';
-  document.getElementById('editImages').value = (product.images || []).join('\n');
   document.getElementById('editDesc').value = product.desc || '';
   document.getElementById('editCategory').value = product.category || 'Defender Products';
   document.getElementById('editActive').value = product.active || 'Y';
@@ -727,6 +901,25 @@ function openEditModal(product) {
   faqContainer.innerHTML = '';
   if (product.faq && product.faq.length) product.faq.forEach(f => addFaqField(f.q, f.a));
   document.getElementById('deleteBtn').style.display = 'block';
+
+  document.getElementById('editImageUrlManual').value = product.image || '';
+  document.getElementById('mainUrlBox').classList.add('hide');
+  document.getElementById('galleryUrlBox').classList.add('hide');
+  document.getElementById('galleryUrlInput').value = '';
+  const mainPreview = document.getElementById('mainImagePreview');
+  if (product.image) {
+    mainPreview.src = cloudinaryThumb(product.image, 500);
+    mainPreview.classList.remove('hide');
+    document.getElementById('mainImagePlaceholder').classList.add('hide');
+    document.getElementById('mainImageHint').classList.remove('hide');
+  } else {
+    mainPreview.classList.add('hide');
+    document.getElementById('mainImagePlaceholder').classList.remove('hide');
+    document.getElementById('mainImageHint').classList.add('hide');
+  }
+  galleryImages = (product.images || []).slice();
+  renderGalleryGrid();
+
   document.getElementById('productModal').classList.add('active');
 }
 
@@ -747,8 +940,7 @@ async function saveProduct() {
     const a = item.querySelector('.faq-a').value;
     if (q && a) faqItems.push({q, a});
   });
-  const imagesStr = document.getElementById('editImages').value;
-  const images = imagesStr.split('\n').map(s => s.trim()).filter(s => s);
+  const images = galleryImages.slice();
   const product = {
     id: editingId || (allProducts.length ? Math.max(...allProducts.map(p => parseInt(p.id)||0)) + 1 : 1),
     name: document.getElementById('editName').value,
