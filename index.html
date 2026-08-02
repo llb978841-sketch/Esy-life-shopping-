@@ -473,30 +473,58 @@ function orderSingleProduct(id){
   const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
   renderOrderForm([{id:p.id, name:p.short_name, price:p.price, qty:qty}], "single");
 }
+
 function renderOrderForm(items, source){
   currentOrderItems = items;
   currentOrderSource = source;
   const app = document.getElementById("app");
   const subtotal = items.reduce((s,i)=>s+i.price*i.qty,0);
-  const itemsText = items.map(i => i.name + " x" + i.qty + " = " + formatPrice(i.price*i.qty)).join("\n");
-  let html = '<div class="page"><div class="order-form"><h3>Place Your Order (COD)</h3><form onsubmit="submitOrder(event)">';
-  html += '<input type="text" name="name" placeholder="Your Full Name" required>';
-  html += '<input type="tel" name="phone" placeholder="Phone Number (01XXXXXXXXX)" required>';
-  html += '<textarea name="address" placeholder="Delivery Address" required></textarea>';
+  const itemsText = items.map(i => i.name + " x" + i.qty).join(", ");
+  
+  let html = '<div class="page"><div class="order-form"><h3>📦 অর্ডার ফর্ম / Order Form</h3><form onsubmit="submitOrder(event)">';
+  
+  // Name
+  html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">নাম / Name <span style="color:var(--primary)">*</span></label>';
+  html += '<input type="text" name="name" placeholder="আপনার নাম লিখুন" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none"></div>';
+  
+  // Mobile
+  html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">মোবাইল নাম্বার / Mobile Number <span style="color:var(--primary)">*</span></label>';
+  html += '<input type="tel" name="phone" placeholder="01XXXXXXXXX" pattern="01[3-9]\\d{8}" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none"></div>';
+  
+  // District
+  html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">জেলা / District <span style="color:var(--primary)">*</span></label>';
+  html += '<input type="text" name="district" placeholder="আপনার জেলার নাম" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none"></div>';
+  
+  // Thana
+  html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">থানা / Thana <span style="color:var(--primary)">*</span></label>';
+  html += '<input type="text" name="thana" placeholder="আপনার থানার নাম" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none"></div>';
+  
+  // Post Office / Ward / Area
+  html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">পোস্ট অফিস / ওয়ার্ড নম্বর / এলাকার নাম <span style="color:var(--primary)">*</span></label>';
+  html += '<textarea name="area" placeholder="পোস্ট অফিস, ওয়ার্ড নম্বর বা এলাকার নাম লিখুন" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;min-height:80px;resize:vertical;outline:none"></textarea></div>';
+  
+  // Delivery Options
+  html += '<div style="margin-bottom:16px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">ডেলিভারি চার্জ / Delivery Charge</label>';
   html += '<div class="delivery-options">';
-  html += '<label class="delivery-option selected" onclick="selectDelivery(this,60)"><input type="radio" name="delivery" value="60" checked onchange="updateOrderSummary()"><span class="opt-label">ঢাকা শহরের ভিতরে</span><span class="opt-price">৳60</span></label>';
-  html += '<label class="delivery-option" onclick="selectDelivery(this,100)"><input type="radio" name="delivery" value="100" onchange="updateOrderSummary()"><span class="opt-label">ঢাকা শহরের বাইরে</span><span class="opt-price">৳100</span></label>';
-  html += '</div>';
-  html += '<textarea name="items" readonly style="background:#f5f5f5">'+itemsText+'</textarea>';
+  html += '<label class="delivery-option selected" onclick="selectDelivery(this,80)"><input type="radio" name="delivery" value="80" checked onchange="updateOrderSummary()"><span class="opt-label">ঢাকার শহরের ভিতরে / Inside Dhaka City</span><span class="opt-price">৳80</span></label>';
+  html += '<label class="delivery-option" onclick="selectDelivery(this,120)"><input type="radio" name="delivery" value="120" onchange="updateOrderSummary()"><span class="opt-label">ঢাকা শহরের বাইরে / Outside Dhaka City</span><span class="opt-price">৳120</span></label>';
+  html += '</div></div>';
+  
+  // Order Summary
   html += '<div style="background:#f5f5f5;padding:14px 16px;border-radius:10px;margin-bottom:12px">';
-  html += '<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span>Subtotal</span><span id="orderSubtotal">'+formatPrice(subtotal)+'</span></div>';
-  html += '<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span>Delivery Charge</span><span id="orderDeliveryFee">'+formatPrice(60)+'</span></div>';
-  html += '<div style="display:flex;justify-content:space-between;font-size:17px;font-weight:800;border-top:1px solid var(--border);padding-top:8px"><span>Total</span><span id="orderGrandTotal" style="color:var(--primary)">'+formatPrice(subtotal+60)+'</span></div>';
+  html += '<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">অর্ডারের বিবরণ / Order Details:</div>';
+  html += '<textarea readonly style="width:100%;background:#fff;padding:12px;border-radius:8px;font-size:13px;border:1px solid var(--border);min-height:60px">'+itemsText+'</textarea>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span>Subtotal / সাবটোটাল</span><span id="orderSubtotal">'+formatPrice(subtotal)+'</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:14px;margin:6px 0"><span>Delivery Charge / ডেলিভারি চার্জ</span><span id="orderDeliveryFee">'+formatPrice(80)+'</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:18px;font-weight:800;margin-top:10px;padding-top:10px;border-top:2px solid var(--primary);color:var(--primary)"><span>Total / মোট</span><span id="orderGrandTotal">'+formatPrice(subtotal+80)+'</span></div>';
   html += '</div>';
-  html += '<button type="submit">Confirm Order</button>';
+  
+  html += '<button type="submit" style="width:100%;background:var(--primary);color:#fff;padding:16px;border-radius:12px;font-size:16px;font-weight:700;margin-top:8px">✅ অর্ডার কনফার্ম করুন / Confirm Order</button>';
   html += '</form></div></div>';
+  
   app.innerHTML = html;
 }
+
 function updateOrderSummary(){
   const checked = document.querySelector('input[name="delivery"]:checked');
   if(!checked) return;
@@ -507,6 +535,7 @@ function updateOrderSummary(){
   if(feeEl) feeEl.textContent = formatPrice(delivery);
   if(totalEl) totalEl.textContent = formatPrice(subtotal+delivery);
 }
+
 function selectDelivery(el,price){
   document.querySelectorAll('.delivery-option').forEach(function(d){ d.classList.remove('selected'); });
   el.classList.add('selected');
@@ -516,26 +545,29 @@ function selectDelivery(el,price){
 
 async function saveOrderToSheet(orderData){
   try{
-    fetch(APPS_SCRIPT_URL + "?action=saveOrder", {
+    await fetch(APPS_SCRIPT_URL + "?action=saveOrder", {
       method: "POST",
       headers: {"Content-Type": "text/plain;charset=utf-8"},
       body: JSON.stringify(orderData)
-    }).catch(function(e){ console.log("Sheet save failed:", e); });
+    });
   }catch(e){ console.log("Sheet save failed:", e); }
 }
 
-// ================= FIXED SUBMIT ORDER FUNCTION =================
-function submitOrder(e){
+async function submitOrder(e){
   e.preventDefault();
   const form = e.target;
   const name = form.name.value.trim();
   const phone = form.phone.value.trim();
-  const address = form.address.value.trim();
+  const district = form.district.value.trim();
+  const thana = form.thana.value.trim();
+  const area = form.area.value.trim();
 
-  if(name.length < 3){ showToast("Please enter your full name"); return; }
-  if(!/^01[3-9]\d{8}$/.test(phone.replace(/[\s-]/g,""))){ showToast("Please enter a valid Bangladeshi phone number"); return; }
-  if(address.length < 5){ showToast("Please enter your delivery address"); return; }
-  if(!currentOrderItems.length){ showToast("No items to order"); return; }
+  if(name.length < 3){ showToast("আপনার পূর্ণ নাম লিখুন"); return; }
+  if(!/^01[3-9]\d{8}$/.test(phone.replace(/[\s-]/g,""))){ showToast("সঠিক মোবাইল নম্বর দিন (01XXXXXXXXX)"); return; }
+  if(district.length < 2){ showToast("জেলা লিখুন"); return; }
+  if(thana.length < 2){ showToast("থানা লিখুন"); return; }
+  if(area.length < 3){ showToast("পোস্ট অফিস/ওয়ার্ড/এলাকার নাম লিখুন"); return; }
+  if(!currentOrderItems.length){ showToast("অর্ডার করার জন্য পণ্য নেই"); return; }
 
   const delivery = parseInt(form.querySelector('input[name="delivery"]:checked').value);
 
@@ -545,15 +577,19 @@ function submitOrder(e){
   });
   
   const subtotal = pricedItems.reduce((s,i)=>s+i.price*i.qty,0);
-  const itemsText = pricedItems.map(i => i.name + " x" + i.qty + " = " + formatPrice(i.price*i.qty)).join("\n");
+  const itemsText = pricedItems.map(i => i.name + " x" + i.qty).join(", ");
   const total = subtotal + delivery;
   const orderId = "ELS" + Date.now().toString(36).toUpperCase();
+  const fullAddress = district + ", " + thana + ", " + area;
 
   const data = {
     order_id: orderId,
     name: name,
     phone: phone,
-    address: address,
+    address: fullAddress,
+    district: district,
+    thana: thana,
+    area: area,
     product_name: itemsText,
     quantity: pricedItems.reduce(function(s,i){return s+i.qty;},0),
     total_price: total,
@@ -564,19 +600,32 @@ function submitOrder(e){
   const submitBtn = form.querySelector('button[type="submit"]');
   if(submitBtn){ 
     submitBtn.disabled = true; 
-    submitBtn.textContent = "Placing order..."; 
+    submitBtn.textContent = "অর্ডার করা হচ্ছে..."; 
   }
 
-  // Send to Google Sheet in background (non-blocking for instant success)
-  saveOrderToSheet(data);
+  // INSTANT SUCCESS MESSAGE
+  showToast("✅ আপনার অর্ডারটি সফল হয়েছে!");
 
-  // FIX: Use correct local variables instead of undefined data properties
-  const msg = "NEW ORDER #" + orderId + "\nName: " + name + "\nPhone: " + phone + "\nAddress: " + address + "\nDelivery: " + formatPrice(delivery) + "\n\n" + itemsText + "\n\nGrand Total: " + formatPrice(total);
+  // Save to sheet FIRST (wait for it)
+  try {
+    await saveOrderToSheet(data);
+    await new Promise(resolve => setTimeout(resolve, 800));
+  } catch(err) {
+    console.log("Sheet save error:", err);
+  }
+
+  // WhatsApp message
+  const msg = " NEW ORDER #" + orderId + 
+    "\n\n👤 Name: " + name + 
+    "\n📱 Phone: " + phone + 
+    "\n District: " + district + 
+    "\n🏢 Thana: " + thana + 
+    "\n🏠 Area: " + area + 
+    "\n Delivery: ৳" + delivery + 
+    "\n\n📦 Items: " + itemsText + 
+    "\n Total: ৳" + total;
   
-  // Open WhatsApp instantly
   window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
-  
-  showToast("Order sent! We will call you to confirm.");
 
   if(currentOrderSource === "cart"){ 
     cart = []; 
@@ -584,13 +633,14 @@ function submitOrder(e){
   }
   currentOrderItems = [];
   
-  // Reset button visually just in case
   if(submitBtn){ 
     submitBtn.disabled = false; 
-    submitBtn.textContent = "Confirm Order"; 
+    submitBtn.textContent = "✅ অর্ডার কনফার্ম করুন"; 
   }
   
-  goHome();
+  setTimeout(function(){
+    goHome();
+  }, 1500);
 }
 
 function toggleMenu(){
