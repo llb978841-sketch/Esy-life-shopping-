@@ -348,7 +348,7 @@ async function loadProducts() {
 }
 
 function renderHome(container){
-  const banners=[{img:"https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",title:"Smart Kitchen Solutions",subtitle:"Make cooking fast, fun, and effortless"},{img:"https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800",title:"Smart Home Essentials",subtitle:"Upgrade to a modern, easy lifestyle"},{img:"https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800",title:"Home Comfort Products",subtitle:"Protect your home, health, and family"}];
+  const banners=[{img:"https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",title:"Smart Kitchen Solutions",subtitle:"Make cooking fast, fun, and effortless"},{img:"https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800",title:"Smart Home Essentials",subtitle:"Upgrade to a modern, easy lifestyle"},{img:"https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800",title:"Home Comfort Products",subtitle:"Protect your home, health, and family"}];
   const prods = products.length ? products : fallbackProducts;
   let html = '<div class="page"><div class="banner"><div class="banner-track" id="bannerTrack">';
   banners.forEach((b,i) => { html += '<div class="banner-slide"><img src="'+b.img+'" alt="'+b.title+'" style="object-fit:cover;width:100%;height:220px;filter:brightness(0.7)"><div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 24px;color:#fff"><h2 style="font-size:24px;font-weight:800;margin-bottom:8px;text-shadow:0 2px 4px rgba(0,0,0,.3)">'+b.title+'</h2><p style="font-size:14px;opacity:.9;text-shadow:0 1px 2px rgba(0,0,0,.3)">'+b.subtitle+'</p></div></div>'; });
