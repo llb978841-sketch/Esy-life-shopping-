@@ -483,34 +483,27 @@ function renderOrderForm(items, source){
   
   let html = '<div class="page"><div class="order-form"><h3>📦 অর্ডার ফর্ম / Order Form</h3><form onsubmit="submitOrder(event)">';
   
-  // Name
   html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">নাম / Name <span style="color:var(--primary)">*</span></label>';
   html += '<input type="text" name="name" placeholder="আপনার নাম লিখুন" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none"></div>';
   
-  // Mobile
   html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">মোবাইল নাম্বার / Mobile Number <span style="color:var(--primary)">*</span></label>';
   html += '<input type="tel" name="phone" placeholder="01XXXXXXXXX" pattern="01[3-9]\\d{8}" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none"></div>';
   
-  // District
   html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">জেলা / District <span style="color:var(--primary)">*</span></label>';
   html += '<input type="text" name="district" placeholder="আপনার জেলার নাম" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none"></div>';
   
-  // Thana
   html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">থানা / Thana <span style="color:var(--primary)">*</span></label>';
   html += '<input type="text" name="thana" placeholder="আপনার থানার নাম" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none"></div>';
   
-  // Post Office / Ward / Area
   html += '<div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text)">পোস্ট অফিস / ওয়ার্ড নম্বর / এলাকার নাম <span style="color:var(--primary)">*</span></label>';
   html += '<textarea name="area" placeholder="পোস্ট অফিস, ওয়ার্ড নম্বর বা এলাকার নাম লিখুন" required style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;min-height:80px;resize:vertical;outline:none"></textarea></div>';
   
-  // Delivery Options
   html += '<div style="margin-bottom:16px"><label style="display:block;font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">ডেলিভারি চার্জ / Delivery Charge</label>';
   html += '<div class="delivery-options">';
   html += '<label class="delivery-option selected" onclick="selectDelivery(this,80)"><input type="radio" name="delivery" value="80" checked onchange="updateOrderSummary()"><span class="opt-label">ঢাকার শহরের ভিতরে / Inside Dhaka City</span><span class="opt-price">৳80</span></label>';
   html += '<label class="delivery-option" onclick="selectDelivery(this,120)"><input type="radio" name="delivery" value="120" onchange="updateOrderSummary()"><span class="opt-label">ঢাকা শহরের বাইরে / Outside Dhaka City</span><span class="opt-price">৳120</span></label>';
   html += '</div></div>';
   
-  // Order Summary
   html += '<div style="background:#f5f5f5;padding:14px 16px;border-radius:10px;margin-bottom:12px">';
   html += '<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">অর্ডারের বিবরণ / Order Details:</div>';
   html += '<textarea readonly style="width:100%;background:#fff;padding:12px;border-radius:8px;font-size:13px;border:1px solid var(--border);min-height:60px">'+itemsText+'</textarea>';
@@ -543,17 +536,18 @@ function selectDelivery(el,price){
   updateOrderSummary();
 }
 
-async function saveOrderToSheet(orderData){
-  try{
-    await fetch(APPS_SCRIPT_URL + "?action=saveOrder", {
-      method: "POST",
-      headers: {"Content-Type": "text/plain;charset=utf-8"},
-      body: JSON.stringify(orderData)
-    });
-  }catch(e){ console.log("Sheet save failed:", e); }
+// ✅ MAGIC INSTANT SAVE FUNCTION
+function saveOrderToSheet(orderData){
+  fetch(APPS_SCRIPT_URL + "?action=saveOrder", {
+    method: "POST",
+    keepalive: true, // Keeps request alive even if browser switches to WhatsApp
+    headers: {"Content-Type": "text/plain;charset=utf-8"},
+    body: JSON.stringify(orderData)
+  }).catch(function(e){ console.log("Sheet save failed:", e); });
 }
 
-async function submitOrder(e){
+// ✅ INSTANT SUBMIT FUNCTION (No loading feel)
+function submitOrder(e){
   e.preventDefault();
   const form = e.target;
   const name = form.name.value.trim();
@@ -570,7 +564,6 @@ async function submitOrder(e){
   if(!currentOrderItems.length){ showToast("অর্ডার করার জন্য পণ্য নেই"); return; }
 
   const delivery = parseInt(form.querySelector('input[name="delivery"]:checked').value);
-
   const pricedItems = currentOrderItems.map(function(i){
     const live = products.find(function(p){ return p.id === i.id; });
     return { id:i.id, name:i.name, qty:i.qty, price: live ? live.price : i.price };
@@ -603,30 +596,26 @@ async function submitOrder(e){
     submitBtn.textContent = "অর্ডার করা হচ্ছে..."; 
   }
 
-  // INSTANT SUCCESS MESSAGE
+  // 1. INSTANT SUCCESS MESSAGE
   showToast("✅ আপনার অর্ডারটি সফল হয়েছে!");
 
-  // Save to sheet FIRST (wait for it)
-  try {
-    await saveOrderToSheet(data);
-    await new Promise(resolve => setTimeout(resolve, 800));
-  } catch(err) {
-    console.log("Sheet save error:", err);
-  }
+  // 2. Send to sheet in background (keepalive keeps it alive)
+  saveOrderToSheet(data);
 
-  // WhatsApp message
+  // 3. Open WhatsApp INSTANTLY
   const msg = " NEW ORDER #" + orderId + 
     "\n\n👤 Name: " + name + 
     "\n📱 Phone: " + phone + 
-    "\n District: " + district + 
+    "\n📍 District: " + district + 
     "\n🏢 Thana: " + thana + 
     "\n🏠 Area: " + area + 
-    "\n Delivery: ৳" + delivery + 
+    "\n🚚 Delivery: ৳" + delivery + 
     "\n\n📦 Items: " + itemsText + 
-    "\n Total: ৳" + total;
+    "\n💰 Total: ৳" + total;
   
   window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(msg), "_blank");
 
+  // 4. Clear cart and go home
   if(currentOrderSource === "cart"){ 
     cart = []; 
     saveCart(); 
